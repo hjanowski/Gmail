@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail Simulation</title>
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #f6f8fc;
+            color: #202124;
+            line-height: 1.4;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Gmail Header */
+        .gmail-header {
+            background-color: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .gmail-logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .gmail-logo img {
+            height: 40px;
+            margin-right: 16px;
+        }
+        
+        .search-box {
+            flex: 1;
+            max-width: 720px;
+            background-color: #f1f3f4;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin: 0 16px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-icon {
+            margin-right: 8px;
+            color: #5f6368;
+        }
+        
+        .search-input {
+            border: none;
+            background: transparent;
+            flex: 1;
+            font-size: 14px;
+            color: #202124;
+        }
+        
+        .search-input:focus {
+            outline: none;
+        }
+        
+        .gmail-nav {
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-left: 16px;
+            color: #5f6368;
+            cursor: pointer;
+        }
+        
+        .profile-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #1a73e8;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-left: 16px;
+            cursor: pointer;
+        }
+        
+        /* Gmail Layout */
+        .gmail-layout {
+            display: flex;
+            height: calc(100vh - 64px);
+        }
+        
+        /* Sidebar */
+        .gmail-sidebar {
+            width: 256px;
+            padding: 8px 0;
+            background-color: white;
+            overflow-y: auto;
+        }
+        
+        .compose-button {
+            margin: 8px 8px 16px 8px;
+            background-color: #c2e7ff;
+            color: #001d35;
+            border-radius: 16px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .compose-button:hover {
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            background-color: #b4e0ff;
+        }
+        
+        .compose-icon {
+            margin-right: 8px;
+        }
+        
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 24px;
+            font-size: 14px;
+            color: #202124;
+            cursor: pointer;
+            border-top-right-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+        
+        .sidebar-item.active {
+            background-color: #e8eaed;
+            font-weight: bold;
+        }
+        
+        .sidebar-item:hover:not(.active) {
+            background-color: #f1f3f4;
+        }
+        
+        .sidebar-icon {
+            width: 20px;
+            margin-right: 16px;
+            color: #5f6368;
+        }
+        
+        .sidebar-item.active .sidebar-icon {
+            color: #1a73e8;
+        }
+        
+        .sidebar-label {
+            flex: 1;
+        }
+        
+        .sidebar-count {
+            color: #5f6368;
+            font-size: 12px;
+        }
+        
+        .sidebar-item.active .sidebar-count {
+            color: #1a73e8;
+        }
+        
+        .sidebar-divider {
+            height: 1px;
+            background-color: #f1f3f4;
+            margin: 8px 0;
+        }
+        
+        /* Main Content */
+        .gmail-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Email Toolbar */
+        .email-toolbar {
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .toolbar-checkbox {
+            margin-right: 16px;
+        }
+        
+        .toolbar-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            color: #5f6368;
+            cursor: pointer;
+        }
+        
+        .toolbar-separator {
+            width: 1px;
+            height: 24px;
+            background-color: #f1f3f4;
+            margin: 0 12px;
+        }
+        
+        .toolbar-pagination {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            color: #5f6368;
+            font-size: 12px;
+        }
+        
+        .pagination-text {
+            margin: 0 8px;
+        }
+        
+        /* Email View */
+        .email-view {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            background-color: white;
+        }
+        
+        .email-header {
+            padding: 16px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .email-subject {
+            font-size: 22px;
+            font-weight: 400;
+            margin-bottom: 16px;
+            color: #202124;
+        }
+        
+        .email-meta {
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .sender-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #1a73e8;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 16px;
+        }
+        
+        .email-info {
+            flex: 1;
+        }
+        
+        .sender-info {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+        
+        .sender-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #202124;
+        }
+        
+        .sender-email {
+            font-size: 14px;
+            color: #5f6368;
+            margin-left: 8px;
+        }
+        
+        .to-me {
+            font-size: 14px;
+            color: #5f6368;
+            margin-left: 4px;
+        }
+        
+        .email-time {
+            font-size: 14px;
+            color: #5f6368;
+            display: flex;
+            align-items: center;
+        }
+        
+        .email-star {
+            margin-left: 16px;
+            color: #5f6368;
+            cursor: pointer;
+        }
+        
+        .email-actions {
+            margin-left: 16px;
+            display: flex;
+        }
+        
+        .email-action-icon {
+            width: 20px;
+            height: 20px;
+            margin-left: 16px;
+            color: #5f6368;
+            cursor: pointer;
+        }
+        
+        /* Email Body */
+        .email-body {
+            padding: 20px;
+            font-size: 14px;
+            color: #202124;
+            line-height: 1.6;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .email-body p {
+            margin-bottom: 16px;
+        }
+        
+        .email-signature {
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid #f1f3f4;
+            color: #5f6368;
+            font-size: 13px;
+        }
+        
+        /* Clever Ad Styles */
+        .clever-ad-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            background-color: #6951ff;
+            overflow: hidden;
+            cursor: pointer;
+            margin: 24px 0;
+            border-radius: 8px;
+        }
+        
+        .clever-ad-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(105, 81, 255, 0.8), rgba(105, 81, 255, 0.6));
+            z-index: 1;
+        }
+        
+        .clever-ad-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.4;
+        }
+        
+        .clever-ad-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 2;
+            padding: 20px;
+        }
+        
+        .clever-ad-title {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .clever-ad-subtitle {
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .clever-ad-discount {
+            background-color: white;
+            color: #6951ff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        .clever-ad-button {
+            background-color: #FFEF00;
+            color: #6951ff;
+            padding: 12px 24px;
+            border-radius: 24px;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: transform 0.2s ease;
+        }
+        
+        .clever-ad-button:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Reply Section */
+        .reply-section {
+            padding: 16px;
+            border-top: 1px solid #f1f3f4;
+        }
+        
+        .reply-box {
+            border: 1px solid #f1f3f4;
+            border-radius: 8px;
+            padding: 16px;
+            min-height: 120px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .reply-toolbar {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            margin-top: 8px;
+        }
+        
+        .reply-button {
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 4px;
+            padding: 8px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: auto;
+            cursor: pointer;
+        }
+        
+        .formatting-icon {
+            margin-right: 16px;
+            color: #5f6368;
+            cursor: pointer;
+        }
+        
+        .formatting-icon:last-of-type {
+            margin-right: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Gmail Header -->
+    <header class="gmail-header">
+        <div class="gmail-logo">
+            <img src="/api/placeholder/120/40" alt="Gmail Logo">
+        </div>
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="Search mail">
+        </div>
+        <div class="gmail-nav">
+            <div class="nav-icon">⚙️</div>
+            <div class="nav-icon">☰</div>
+            <div class="profile-icon">L</div>
+        </div>
+    </header>
+    
+    <!-- Gmail Layout -->
+    <div class="gmail-layout">
+        <!-- Sidebar -->
+        <div class="gmail-sidebar">
+            <div class="compose-button">
+                <span class="compose-icon">✏️</span>
+                <span>Compose</span>
+            </div>
+            
+            <div class="sidebar-item active">
+                <span class="sidebar-icon">📥</span>
+                <span class="sidebar-label">Inbox</span>
+                <span class="sidebar-count">12</span>
+            </div>
+            
+            <div class="sidebar-item">
+                <span class="sidebar-icon">⭐</span>
+                <span class="sidebar-label">Starred</span>
+            </div>
+            
+            <div class="sidebar-item">
+                <span class="sidebar-icon">⏱️</span>
+                <span class="sidebar-label">Snoozed</span>
+            </div>
+            
+            <div class="sidebar-item">
+                <span class="sidebar-icon">📤</span>
+                <span class="sidebar-label">Sent</span>
+            </div>
+            
+            <div class="sidebar-item">
+                <span class="sidebar-icon">📝</span>
+                <span class="sidebar-label">Drafts</span>
+                <span class="sidebar-count">3</span>
+            </div>
+            
+            <div class="sidebar-item">
+                <span class="sidebar-icon">⬇️</span>
+                <span class="sidebar-label">More</span>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <div class="sidebar-item">
+                <span class="sidebar-label">Labels</span>
+            </div>
+            
+            <div class="sidebar-item">
+                <span class="sidebar-icon">🏷️</span>
+                <span class="sidebar-label">Important</span>
+            </div>
+            
+            <div class="sidebar-item">
+                <span class="sidebar-icon">💼</span>
+                <span class="sidebar-label">Work</span>
+                <span class="sidebar-count">5</span>
+            </div>
+            
+            <div class="sidebar-item">
+                <span class="sidebar-icon">📊</span>
+                <span class="sidebar-label">Analytics</span>
+                <span class="sidebar-count">2</span>
+            </div>
+            
+            <div class="sidebar-item">
+                <span class="sidebar-icon">🔄</span>
+                <span class="sidebar-label">Updates</span>
+                <span class="sidebar-count">7</span>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="gmail-content">
+            <!-- Email Toolbar -->
+            <div class="email-toolbar">
+                <div class="toolbar-checkbox">☑️</div>
+                <div class="toolbar-icon">🔄</div>
+                <div class="toolbar-icon">🗑️</div>
+                <div class="toolbar-separator"></div>
+                <div class="toolbar-icon">📁</div>
+                <div class="toolbar-icon">🏷️</div>
+                <div class="toolbar-icon">⋯</div>
+                
+                <div class="toolbar-pagination">
+                    <span>1–50 of 253</span>
+                    <div class="toolbar-icon">◀️</div>
+                    <div class="toolbar-icon">▶️</div>
+                </div>
+            </div>
+            
+            <!-- Email View -->
+            <div class="email-view">
+                <!-- Email Header -->
+                <div class="email-header">
+                    <div class="email-subject">Transform Your Data with Clever - Spring Offer!</div>
+                    
+                    <div class="email-meta">
+                        <div class="sender-avatar">C</div>
+                        
+                        <div class="email-info">
+                            <div class="sender-info">
+                                <span class="sender-name">Clever Team</span>
+                                <span class="sender-email">&lt;team@clever.io&gt;</span>
+                                <span class="to-me">to me</span>
+                            </div>
+                            
+                            <div class="email-time">
+                                May 16, 2025, 9:14 AM
+                            </div>
+                        </div>
+                        
+                        <div class="email-star">⭐</div>
+                        
+                        <div class="email-actions">
+                            <div class="email-action-icon">↩️</div>
+                            <div class="email-action-icon">⋯</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Email Body -->
+                <div class="email-body">
+                    <p>Hi Larry,</p>
+                    
+                    <p>We hope this email finds you well! As CTO at generate.io, we know how important data visualization is for your team's success.</p>
+                    
+                    <p>For a limited time, we're offering a special <strong>10% discount</strong> on our full Clever package - the all-in-one solution that transforms any data into powerful visualizations instantly.</p>
+                    
+                    <!-- Clever Ad -->
+                    <a href="https://hjanowski.github.io/Clever/index.html?utm_source=Email&utm_campaign=USA_MidWest_CleverFullPack_FEXECS25-50_10PCTOFF_LeadGen&utm_content=Email_Banner_SpringOffer" target="_blank">
+                        <div class="clever-ad-container">
+                            <div class="clever-ad-overlay"></div>
+                            <img src="/api/placeholder/600/400" alt="Data visualization" class="clever-ad-image">
+                            <div class="clever-ad-content">
+                                <h2 class="clever-ad-title">Transform Your Data Instantly</h2>
+                                <p class="clever-ad-subtitle">Turn complex datasets into powerful insights</p>
+                                <div class="clever-ad-discount">SPRING OFFER: SAVE 10%</div>
+                                <div class="clever-ad-button">Book a Demo Today</div>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <p>With Clever, you can:</p>
+                    <ul style="margin-left: 20px; margin-bottom: 16px;">
+                        <li>Convert any data source into dynamic visualizations in seconds</li>
+                        <li>Create interactive dashboards with zero coding required</li>
+                        <li>Share insights across your organization with one click</li>
+                        <li>Integrate with all your existing tools and platforms</li>
+                        <li>Access our premium analytics templates and library</li>
+                    </ul>
+                    
+                    <p>This offer is only available until May 31st! Book a demo with our team to see how Clever can transform your data workflow.</p>
+                    
+                    <p>Best regards,</p>
+                    <p>The Clever Team</p>
+                    
+                    <div class="email-signature">
+                        <p><strong>Clever</strong> | AI-Powered Analytics & Visualization</p>
+                        <p>123 Data Street, San Francisco, CA 94105</p>
+                        <p>www.clever.io | team@clever.io | (555) 123-4567</p>
+                    </div>
+                </div>
+                
+                <!-- Reply Section -->
+                <div class="reply-section">
+                    <div class="reply-box" contenteditable="true" placeholder="Click here to reply..."></div>
+                    
+                    <div class="reply-toolbar">
+                        <div class="formatting-icon">B</div>
+                        <div class="formatting-icon">I</div>
+                        <div class="formatting-icon">U</div>
+                        <div class="formatting-icon">📎</div>
+                        <div class="formatting-icon">📄</div>
+                        <div class="reply-button">Send</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
